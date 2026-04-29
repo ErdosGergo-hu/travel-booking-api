@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -23,6 +24,10 @@ public class Auction {
     @OneToOne
     @JoinColumn(name = "item_id")
     private Item item;
+
+    private BigDecimal startingPriceHuf;
+
+    private BigDecimal currentPriceHuf;
 
     private LocalDateTime startDateTime;
 
