@@ -27,8 +27,6 @@ public class Item {
 
     private String imageUrl;
 
-    private BigDecimal finalPriceHuf;
-
     private Integer quantity;
 
     @Enumerated(value = EnumType.STRING)
