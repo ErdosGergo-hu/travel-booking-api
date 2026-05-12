@@ -21,11 +21,13 @@ public class Bid {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "auction_id")
     private Auction auction;
 
-    private String bidderName; // TODO: User entitás
+    @ManyToOne
+    @JoinColumn(name = "bidder_id")
+    private User bidder;
 
     @Column(nullable = false)
     private BigDecimal amountHuf;
