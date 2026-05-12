@@ -2,8 +2,9 @@ package hu.erdosgergo.travel_booking_api.service;
 
 import hu.erdosgergo.travel_booking_api.dto.request.CreateBidRequest;
 import hu.erdosgergo.travel_booking_api.dto.response.AuctionResponse;
+import hu.erdosgergo.travel_booking_api.exception.BidTooLowException;
 import hu.erdosgergo.travel_booking_api.mapper.AuctionMapper;
-import hu.erdosgergo.travel_booking_api.search.criteria.ItemSearchCriteria;
+import hu.erdosgergo.travel_booking_api.search.criteria.AuctionSearchCriteria;
 import hu.erdosgergo.travel_booking_api.model.Auction;
 import hu.erdosgergo.travel_booking_api.repository.AuctionRepository;
 import hu.erdosgergo.travel_booking_api.search.specification.AuctionSpecification;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Slf4j
 @Service
@@ -55,8 +57,9 @@ public class AuctionService {
     @Transactional
     public Auction updateAuctionByPrice(Long id, BigDecimal newPrice) {
         Auction auction = repository.findById(id).orElseThrow();
-        if(auction.getCurrentPriceHuf().compareTo(newPrice) > 0) {
-            throw new RuntimeException("The new Bid value is lower than the previous value!");
+
+        if(auction.getCurrentPriceHuf().compareTo(newPrice) >= 0) {
+            throw new BidTooLowException(auction.getCurrentPriceHuf().setScale(0, RoundingMode.DOWN), newPrice);
         }
         auction.setCurrentPriceHuf(newPrice);
 
@@ -69,12 +72,12 @@ public class AuctionService {
         return getResponseByAuction(auction);
     }
 
-    public Page<Auction> search(ItemSearchCriteria criteria, Object value, Pageable pageable) {
+    public Page<Auction> search(AuctionSearchCriteria criteria, Pageable pageable) {
         if(criteria == null) {
             return repository.findAll(pageable);
         }
 
-        Specification<Auction> spec = auctionSpecification.build(criteria, Auction.class);
+        Specification<Auction> spec = auctionSpecification.build(criteria);
 
         return repository.findAll(spec, pageable);
     }

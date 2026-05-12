@@ -1,8 +1,8 @@
 package hu.erdosgergo.travel_booking_api.search.criteria;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public abstract class SearchCriteria {
     private String query;
 }

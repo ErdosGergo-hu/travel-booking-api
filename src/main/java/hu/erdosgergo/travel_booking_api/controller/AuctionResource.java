@@ -2,7 +2,7 @@ package hu.erdosgergo.travel_booking_api.controller;
 
 import hu.erdosgergo.travel_booking_api.dto.request.CreateBidRequest;
 import hu.erdosgergo.travel_booking_api.dto.response.AuctionResponse;
-import hu.erdosgergo.travel_booking_api.search.criteria.ItemSearchCriteria;
+import hu.erdosgergo.travel_booking_api.search.criteria.AuctionSearchCriteria;
 import hu.erdosgergo.travel_booking_api.model.Auction;
 import hu.erdosgergo.travel_booking_api.service.AuctionService;
 import jakarta.validation.Valid;
@@ -26,12 +26,13 @@ public class AuctionResource {
         return auctionService.getResponseById(id);
     }
 
+    // TODO: AuctionResponse-nak kéne visszajönnie
     @GetMapping("/search")
     public Page<Auction> getPageableAuctions(
             @RequestParam(required = false, defaultValue = "") Object value,
-            ItemSearchCriteria itemSearchCriteria,
+            AuctionSearchCriteria auctionSearchCriteria,
             Pageable pageable) {
-        return auctionService.search(itemSearchCriteria, value, pageable);
+        return auctionService.search(auctionSearchCriteria, pageable);
     }
 
     @PutMapping("/{id}/bid")

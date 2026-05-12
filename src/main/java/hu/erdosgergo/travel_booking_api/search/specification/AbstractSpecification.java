@@ -1,29 +1,28 @@
 package hu.erdosgergo.travel_booking_api.search.specification;
 
+import hu.erdosgergo.travel_booking_api.search.FieldName;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Root;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
 
-//TODO: A több státusz (IN) szűrés bevezetése, FieldName annotáció bevezetése a map helyére
+//TODO: A több státusz (IN) szűrés bevezetése
 
+@Slf4j
 @NoArgsConstructor
 public abstract class AbstractSpecification<C, T> {
 
-    public Specification<T> build(C criteria, Class<T> entityClass) {
-        Specification<T> spec = Specification.unrestricted();
+    private static final String QUERY = "query";
 
-        if (criteria == null) {
-            return spec;
-        }
+    public Specification<@NonNull T> build(C criteria) {
+        Specification<@NonNull T> spec = Specification.unrestricted();
 
-        Map<String, String> fieldMapping = getFieldMapping();
-
-        for (Field field : criteria.getClass().getDeclaredFields()) {
+        for (Field field : FieldUtils.getAllFields(criteria.getClass())) {
             field.setAccessible(true);
 
             Object value;
@@ -33,20 +32,17 @@ public abstract class AbstractSpecification<C, T> {
                 throw new RuntimeException("Failed to read criteria field: " + field.getName(), e);
             }
 
-            if (value == null) {
-                continue;
-            }
-
-            if (value instanceof String s && s.isBlank()) {
+            if (value == null || (value instanceof String s && s.isBlank())) {
                 continue;
             }
 
             String criteriaFieldName = field.getName();
 
-            String entityPath = fieldMapping.getOrDefault(criteriaFieldName, criteriaFieldName);
+            FieldName annotation = field.getAnnotation(FieldName.class);
+            String entityPath = annotation == null || annotation.name().isBlank() ? criteriaFieldName: annotation.name();
 
             // skip helper/global fields if needed
-            if ("query".equals(criteriaFieldName)) {
+            if (QUERY.equals(criteriaFieldName)) {
                 spec = spec.and(buildPredicate("item.name", value));
             } else {
                 spec = spec.and(buildPredicate(entityPath, value));
@@ -56,16 +52,21 @@ public abstract class AbstractSpecification<C, T> {
         return spec;
     }
 
-    private Specification<T> buildPredicate(String entityPath, Object value) {
+    protected Specification<@NonNull T> buildPredicate(String entityPath, Object value) {
         return (root, query, cb) -> {
-            Path<?> path = resolvePath(root, entityPath);
+            Path<?> path;
 
-            // String -> like ignore case
+            try {
+                path = resolvePath(root, entityPath);
+            } catch(Exception e) {
+                log.error("Could net get the Path for: {}", entityPath);
+                return cb.conjunction();
+            }
+
             if (value instanceof String s) {
                 return cb.like(cb.lower(path.as(String.class)), "%" + s.toLowerCase() + "%");
             }
 
-            // Number / Boolean / ENUM / others -> equal
             return cb.equal(path, value);
         };
     }
@@ -76,20 +77,5 @@ public abstract class AbstractSpecification<C, T> {
             current = current.get(part);
         }
         return current;
-    }
-
-    private Map<String, String> getFieldMapping() {
-        Map<String, String> mapping = new HashMap<>();
-
-        // criteria field -> entity field
-        mapping.put("category", "item.category");
-        mapping.put("status", "item.status");
-        mapping.put("name", "item.name");
-
-        // range fields map to same entity field
-//        mapping.put("minCurrentBid", "currentBid");
-//        mapping.put("maxCurrentBid", "currentBid");
-
-        return mapping;
     }
 }
