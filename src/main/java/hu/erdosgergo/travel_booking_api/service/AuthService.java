@@ -37,8 +37,6 @@ public class AuthService {
     @Value("${jwt.refresh-token-expiry}")
     private long refreshTokenExpiry;
 
-    // ── Register ─────────────────────────────────────────────────────────────
-
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
@@ -47,6 +45,7 @@ public class AuthService {
 
         User user = User.builder()
                 .email(request.email())
+                .username(request.username())
                 .password(passwordEncoder.encode(request.password()))
                 .createdAt(Instant.now())
                 .build();
@@ -54,8 +53,6 @@ public class AuthService {
         userRepository.save(user);
         return buildAuthResponse(user);
     }
-
-    // ── Login ─────────────────────────────────────────────────────────────────
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
@@ -73,8 +70,6 @@ public class AuthService {
         return buildAuthResponse(user);
     }
 
-    // ── Refresh ───────────────────────────────────────────────────────────────
-
     @Transactional
     public AuthResponse refresh(RefreshRequest request) {
         RefreshToken stored = refreshTokenRepository.findByToken(request.refreshToken())
@@ -91,8 +86,6 @@ public class AuthService {
         refreshTokenRepository.flush();
         return buildAuthResponse(user);
     }
-
-    // ── Logout ────────────────────────────────────────────────────────────────
 
     @Transactional
     public void logout(String email) {
