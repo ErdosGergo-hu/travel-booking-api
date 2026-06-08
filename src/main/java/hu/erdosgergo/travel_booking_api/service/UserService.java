@@ -2,6 +2,8 @@ package hu.erdosgergo.travel_booking_api.service;
 
 import hu.erdosgergo.travel_booking_api.dto.response.UserResponse;
 import hu.erdosgergo.travel_booking_api.model.User;
+import hu.erdosgergo.travel_booking_api.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -9,8 +11,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
+@RequiredArgsConstructor
 @Service
 public class UserService {
+
+    private final UserRepository repository;
 
     public User getCurrentUser() {
         return (User) Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getPrincipal();
@@ -27,5 +32,10 @@ public class UserService {
                 .createdAt(user.getCreatedAt())
                 .username(user.getUsername())
                 .build();
+    }
+
+    public User getUserById(Long id) {
+        return repository.findById(id).orElseThrow(() ->
+            new UsernameNotFoundException("User not found by id: " + id));
     }
 }

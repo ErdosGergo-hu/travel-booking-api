@@ -25,8 +25,10 @@ public class UserDashboardView {
     @Column(name = "finished_auctions")
     private Long finishedAuctions;
 
-    @Column(name = "current_auctions")
-    private Long currentAuctions;
+    @Column(name = "active_listings")
+    private Long activeListings;
 
     private BigDecimal earnings;
+
+    private BigDecimal spent;
 }

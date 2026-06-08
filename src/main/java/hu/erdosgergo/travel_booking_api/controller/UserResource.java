@@ -4,10 +4,7 @@ import hu.erdosgergo.travel_booking_api.service.UserDashboardViewService;
 import hu.erdosgergo.travel_booking_api.service.UserService;
 import hu.erdosgergo.travel_booking_api.view.UserDashboardView;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,5 +20,10 @@ public class UserResource {
     @GetMapping("/dashboard")
     public List<UserDashboardView> getDashboardUsers() {
         return userDashboardViewService.findAll();
+    }
+
+    @GetMapping("/profile/{userId}")
+    public UserDashboardView getUserStat(@PathVariable Long userId) {
+        return userDashboardViewService.findById(userId);
     }
 }

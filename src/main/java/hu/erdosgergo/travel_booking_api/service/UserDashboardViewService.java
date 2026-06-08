@@ -16,4 +16,8 @@ public class UserDashboardViewService {
     public List<UserDashboardView> findAll() {
         return repository.findAll();
     }
+
+    public UserDashboardView findById(Long userId) {
+        return repository.findById(userId).orElse(null);
+    }
 }
