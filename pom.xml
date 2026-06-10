@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>hu.erdosgergo</groupId>
-	<artifactId>travel-booking-api</artifactId>
+	<artifactId>online-auction-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name/>
 	<description/>
